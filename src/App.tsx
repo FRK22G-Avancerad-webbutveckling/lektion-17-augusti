@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import './App.css'
-import { Data, StopLocation } from './interfaces.d'
+import { Data, Position, StopLocation } from './interfaces.d'
 import { fetchStops } from './resrobot'
+import { getPosition } from './geolocation'
 
 /*
 Plan för livekodning:
@@ -19,11 +20,22 @@ function App() {
 	// Innan vi fetchat är result NULL
 	// Sedan implementerar det Data-interfacet
 	const [result, setResult] = useState<Data | null>(null)
+	const [position, setPosition] = useState<Position | null>(null)
+	const [errorMessage, setErrorMessage] = useState<string>('')
 
 	// console.log('Api key: ', import.meta.env.VITE_RESROBOT_API_KEY)
 	const handleClick = async () => {
 		const lat = 57.708895, lon = 11.973479
 		fetchStops(lat, lon, setResult)
+	}
+
+	const handleGetPosition = async () => {
+		try {
+			const pos: Position = await getPosition()
+			setPosition(pos)
+		} catch(error) {
+			setErrorMessage((error as Error).message)
+		}
 	}
 
 	let stops: null | StopLocation[] = null
@@ -41,6 +53,12 @@ function App() {
 					<li key={stop.StopLocation.extId}> {stop.StopLocation.name} ({stop.StopLocation.dist} meter) </li>
 				))} </ul>
 				: (<p> Här kommer hållplatser att visas... </p>)}
+
+				<button onClick={handleGetPosition}> Hämta min position </button>
+				<p> {errorMessage} </p>
+				{position && (
+					<p> Du är på {position.latitude} latitud, {position.longitude} longitud. </p>
+				)}
 			</main>
 		</div>
 	)

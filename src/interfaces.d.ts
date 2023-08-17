@@ -1,3 +1,8 @@
+export interface Position {
+	latitude: number;
+	longitude: number;
+}
+
 export interface Data {
 	stopLocationOrCoordLocation: StopLocation[]
 }
