@@ -1,26 +1,19 @@
 import { useState } from 'react'
 import './App.css'
+import { Data, StopLocation } from './interfaces.d'
+import { fetchStops } from './resrobot'
 
 /*
 Plan för livekodning:
-0. environment variables
-1. använd ResRobot API för att hämta information om en plats
-2. skriv interface som beskriver datan
-2b. presentera resultatet
-3. refaktorera koden - flera filer
-4. använda async med Geolocation
+1. environment variables
+2. använd ResRobot API för att hämta information om en plats
+3. skriv interface som beskriver datan
+4. presentera resultatet - mappa objekt[] -> JSX[]
+5. refaktorera koden - flera filer
+6. använda async med Geolocation
 */
 
-interface Data {
-	stopLocationOrCoordLocation: StopLocation[]
-}
-interface StopLocation {
-	StopLocation: {
-		dist: number;   // distance from (lat,lon) in meters
-		extId: string;
-		name: string;
-	}
-}
+
 
 function App() {
 	// Innan vi fetchat är result NULL
@@ -30,17 +23,7 @@ function App() {
 	// console.log('Api key: ', import.meta.env.VITE_RESROBOT_API_KEY)
 	const handleClick = async () => {
 		const lat = 57.708895, lon = 11.973479
-		const url = `https://api.resrobot.se/v2.1/location.nearbystops?originCoordLat=${lat}&originCoordLong=${lon}&format=json&accessId=${import.meta.env.VITE_RESROBOT_API_KEY}`
-		// Om något går fel: console.logga URL:EN
-		try {
-			const response = await fetch(url)
-			const data: Data = await response.json()
-			console.log('Data från ResRobot:', data);
-			setResult(data)
-		} catch(error) {
-			// TODO: ge feedback till användaren
-			console.log('Något gick fel i API:et ', error);
-		}
+		fetchStops(lat, lon, setResult)
 	}
 
 	let stops: null | StopLocation[] = null
