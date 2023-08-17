@@ -6,16 +6,20 @@ Plan för livekodning:
 0. environment variables
 1. använd ResRobot API för att hämta information om en plats
 2. skriv interface som beskriver datan
-3. använda async med Geolocation
+2b. presentera resultatet
+3. refaktorera koden - flera filer
+4. använda async med Geolocation
 */
 
 interface Data {
 	stopLocationOrCoordLocation: StopLocation[]
 }
 interface StopLocation {
-	dist: number;   // distance from (lat,lon) in meters
-	extId: string;
-	name: string;
+	StopLocation: {
+		dist: number;   // distance from (lat,lon) in meters
+		extId: string;
+		name: string;
+	}
 }
 
 function App() {
@@ -27,10 +31,16 @@ function App() {
 	const handleClick = async () => {
 		const lat = 57.708895, lon = 11.973479
 		const url = `https://api.resrobot.se/v2.1/location.nearbystops?originCoordLat=${lat}&originCoordLong=${lon}&format=json&accessId=${import.meta.env.VITE_RESROBOT_API_KEY}`
-		const response = await fetch(url)
-		const data: Data = await response.json()
-		console.log('Data från ResRobot:', data);
-		setResult(data)
+		// Om något går fel: console.logga URL:EN
+		try {
+			const response = await fetch(url)
+			const data: Data = await response.json()
+			console.log('Data från ResRobot:', data);
+			setResult(data)
+		} catch(error) {
+			// TODO: ge feedback till användaren
+			console.log('Något gick fel i API:et ', error);
+		}
 	}
 
 	let stops: null | StopLocation[] = null
@@ -44,13 +54,26 @@ function App() {
 			<main>
 				<button onClick={handleClick}> Hämta information från ResRobot </button>
 				{stops 
-				? stops.map
+				? <ul> {stops.map(stop => (
+					<li key={stop.StopLocation.extId}> {stop.StopLocation.name} ({stop.StopLocation.dist} meter) </li>
+				))} </ul>
 				: (<p> Här kommer hållplatser att visas... </p>)}
 			</main>
 		</div>
 	)
 }
 
+/*
+const reality = {
+	StopLocation: {
+		name: 'exempel',
+		dist: 123
+	}
+}
+const wish = {
+	name: 'exempel',
+	dist: 123
+}*/
 /*
 Higher order functions:
 - forEach - motsvarar en vanlig for-loop
